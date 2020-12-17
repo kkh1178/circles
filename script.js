@@ -1,10 +1,5 @@
 "use strict";
 
-// // Get the height and width of the canvas from inside of the element
-// var positionInfo = c.getBoundingClientRect();
-// var height = positionInfo.height;
-// var width = positionInfo.width;
-
 //Select the myCanvas element
 const c = document.getElementById("myCanvas");
 
@@ -20,53 +15,95 @@ function genNum(max) {
     return Math.floor(Math.random() * Math.floor(max));
 }
 
-// Generate a random circle
-ctx.beginPath();
-ctx.arc(genNum(c.width / 2), genNum(c.height / 2), genNum(100), 0, 2 * Math.PI);
-ctx.fill();
-ctx.stroke();
-
-ctx.fillStyle = "rgb(255, 255, 255)";
-ctx.fill;
-
-// Draw a circle function
-function drawCircle() {
-    ctx.beginPath();
-    ctx.arc(
-        genNum(c.width / 2),
-        genNum(c.height / 2),
-        genNum(100),
-        0,
-        2 * Math.PI
-    );
-    // ctx.fill(genNum(255), genNum(255), genNum(255), 120);
-    ctx.stroke();
+// Calculate
+function dist(x1, y1, x2, y2) {
+    return Math.sqrt((x1 - x2) ** 2 + (y1 - y2) ** 2);
 }
 
-// Draw multiple circles
-function multipleCircles(num) {
-    for (let i = 0; i < num; i++) {
-        drawCircle();
+// So the above works but it might be easier to try it a different way; https://editor.p5js.org/Allayna/sketches/33LX_CQM5
+const circles = [];
+
+function createCircles(num) {
+    if (num < 1000) {
+        while (circles.length < num) {
+            // While the length of the array is less than what we want, randomly generate circle paramaters
+            const circle = {
+                x: genNum(c.width),
+                y: genNum(c.height),
+                r: genNum(100),
+            };
+
+            let overlap = false;
+            // Iterate through the array and generate the Euclidean distance in 2D.
+            for (let i = 0; i < circles.length; i++) {
+                const test = circles[i];
+                const d = dist(circle.x, circle.y, test.x, test.y);
+                // console.log(d);
+                // if eucledean distance is less than the sum of two radius, push to the array
+                if (d < circle.r + test.r) {
+                    overlap = true;
+                }
+            }
+            if (!overlap) {
+                circles.push(circle);
+            }
+        }
     }
 }
 
-multipleCircles(5);
+createCircles(10);
 
-// // Lets try to make more than one circle and NOT let them overlap
-// function generateCircles(c, num) {
-//   while (num < 10)
-//     c.beginPath();
-//     c.arc(
-//         genNum(c.width / 2),
-//         genNum(c.height / 2),
-//         genNum(100),
-//         0,
-//         2 * Math.PI
-//     );
-//     c.stroke();
-// }
+circles.map(function (circle) {
+    console.log(circle);
+    // ctx.fillStyle = "#c82124";
+    ctx.beginPath();
+    ctx.arc(circle.x, circle.y, circle.r, 0, 2 * Math.PI);
+    ctx.closePath();
+    ctx.fillStyle = `rgba(${genNum(255)}, ${genNum(255)}, ${genNum(255)}, 0.3)`;
+    ctx.fill();
+    // ctx.stroke();
+});
 
 //
+
+// // Get the height and width of the canvas from inside of the element
+// var positionInfo = c.getBoundingClientRect();
+// var height = positionInfo.height;
+// var width = positionInfo.width;
+
+//
+
+// // Draw a circle function
+// function drawCircle() {
+//   ctx.beginPath();
+//   ctx.arc(
+//       genNum(c.width / 2),
+//       genNum(c.height / 2),
+//       genNum(100),
+//       0,
+//       2 * Math.PI
+//   );
+//   // ctx.fillStyle = `rgb(${genNum(255)}, ${genNum(255)}, ${genNum(255)})`;
+//   ctx.fillStyle = "rgb(255, 255, 255)";
+//   ctx.stroke();
+// }
+// // Generate a random circle
+// ctx.beginPath();
+// ctx.arc(genNum(c.width / 2), genNum(c.height / 2), genNum(100), 0, 2 * Math.PI);
+// ctx.fill();
+// ctx.stroke();
+
+// ctx.fillStyle = "rgb(255, 255, 255)";
+// ctx.fill();
+
+// multipleCircles(5);
+
+// // Draw multiple circles
+// function multipleCircles(num) {
+//   for (let i = 0; i < num; i++) {
+//       drawCircle();
+//   }
+// }
 
 // beginpath is called before the beginning of each line
 // ctx.beginPath();
