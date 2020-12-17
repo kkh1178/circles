@@ -11,8 +11,9 @@ c.height = window.innerHeight - 5;
 const ctx = c.getContext("2d");
 
 // will return a randome whole number between 0 and the max
-function genNum(max) {
-    return Math.floor(Math.random() * Math.floor(max));
+function genNum(min, max) {
+    // return Math.floor(Math.random() * Math.floor(max));
+    return Math.floor(Math.random() * (max - min) + min);
 }
 
 // Calculate
@@ -28,9 +29,9 @@ function createCircles(num) {
         while (circles.length < num) {
             // While the length of the array is less than what we want, randomly generate circle paramaters
             const circle = {
-                x: genNum(c.width),
-                y: genNum(c.height),
-                r: genNum(100),
+                x: genNum(120, c.width - 120),
+                y: genNum(120, c.height - 120),
+                r: genNum(10, 100),
             };
 
             let overlap = false;
@@ -59,7 +60,10 @@ circles.map(function (circle) {
     ctx.beginPath();
     ctx.arc(circle.x, circle.y, circle.r, 0, 2 * Math.PI);
     ctx.closePath();
-    ctx.fillStyle = `rgba(${genNum(255)}, ${genNum(255)}, ${genNum(255)}, 0.3)`;
+    ctx.fillStyle = `rgba(${genNum(0, 255)}, ${genNum(0, 255)}, ${genNum(
+        0,
+        255
+    )}, 0.3)`;
     ctx.fill();
     // ctx.stroke();
 });
