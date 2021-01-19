@@ -3,11 +3,17 @@
     <head>
         <meta charset="UTF-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-        <script src="https://cdn.babylonjs.com/babylon.max.js"></script>
+        <!-- <script src="https://cdn.babylonjs.com/babylon.max.js"></script> -->
+        <script src="https://cdn.babylonjs.com/babylon.js"></script>
+        <script src="/vendor/babylon.js"></script>
+        <!-- <script src="https://cdn.babylonjs.com/viewer/babylon.viewer.js"></script> -->
+        <script src="https://cdn.babylonjs.com/loaders/babylonjs.loaders.min.js"></script>
         <title>Document</title>
         <style>
-            #myCanvas {
+            #renderCanvas {
                 border: 1px solid #d3d3d3;
+                width: 100%;
+                height: 100%;
             }
             body {
                 margin: 0;
@@ -16,8 +22,9 @@
         <!-- <link rel="stylesheet" type="text/css" href="style.css" /> -->
     </head>
     <body>
-        <canvas id="myCanvas"></canvas>
-        <script src="script.js"></script>
-        <script src="babylon.js"></script>
+        <canvas id="renderCanvas"> </canvas>
+        <!-- <babylon model="scene.babylon"></babylon> -->
+        <!-- <script src="script.js"></script> -->
+        <script src="orbits.js"></script>
     </body>
 </html>
