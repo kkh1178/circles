@@ -1,5 +1,3 @@
-/// <reference path="./vendor/babylon.d.ts" />
-
 // https://www.babylonjs-playground.com/#1UGDQC#4
 
 var createScene = function () {
@@ -9,9 +7,9 @@ var createScene = function () {
     const camera = new BABYLON.ArcRotateCamera(
         "camera",
         -5,
-        -5,
-        20,
-        BABYLON.Vector3.Zero(),
+        -55,
+        60,
+        BABYLON.Vector3(10, 10, 10),
         scene
     );
 
@@ -32,10 +30,61 @@ var createScene = function () {
     );
 
     // MAKING THE PLANETS AND SEEDLINGS
+    //Select the myCanvas element
+    const c = document.getElementById("renderCanvas");
+
+    // Set the canvas width and height to the window objects width and height
+    c.width = window.innerWidth - 5;
+    c.height = window.innerHeight - 5;
 
     // will return a random whole number between the min and the max
     function genNum(min, max) {
         return Math.floor(Math.random() * (max - min) + min);
+    }
+
+    // Calculate the Euclidean distance
+    function dist(x1, y1, z1, x2, y2, z2) {
+        return Math.sqrt((x1 - x2) ** 2 + (y1 - y2) ** 2 + (z1 - z2) ** 2);
+    }
+
+    // Function to create non-overlapping planets
+    function createPlanetPositions(num, diameter) {
+        const positions = [];
+
+        // While the length of the array is less than what we want, randomly generate circle paramaters
+        while (positions.length < num) {
+            const vector = {
+                x: genNum(0, 20),
+                y: genNum(0, 20),
+                z: genNum(0, 20),
+                diameter: diameter,
+            };
+            // Set the overlap to false
+            let overlap = false;
+
+            // Iterate through the array and generate the Euclidean distant in 3D
+            for (let i = 0; i < positions.length; i++) {
+                const test = positions[i];
+                const d = dist(
+                    vector.x,
+                    vector.y,
+                    vector.z,
+                    test.x,
+                    test.y,
+                    test.z
+                );
+
+                // if eucledean distance is less than the sum of two radius (plus a buffer to keep the circles from
+                // partially disappearing), push to the array
+                if (d < vector.diameter + test.diameter + 1) {
+                    overlap = true;
+                }
+            }
+            if (!overlap) {
+                positions.push(vector);
+            }
+        }
+        return positions;
     }
 
     // function to build a planet
@@ -45,8 +94,8 @@ var createScene = function () {
             { diameter },
             scene
         );
-        // randomly generate positioning for the planet
-        planet.position = new BABYLON.Vector3(genNum(2, 10), genNum(2, 10), 0);
+        // // randomly generate positioning for the planet
+        // planet.position = new BABYLON.Vector3(genNum(2, 10), genNum(2, 10), 0);
 
         // Adding materials for the planet
         const materialPlanet = new BABYLON.StandardMaterial(
@@ -63,7 +112,7 @@ var createScene = function () {
     }
 
     // Building a seedling
-    function buildSeedling(planet, seedlingName) {
+    function buildSeedling(planet, seedlingName, planetDiameter) {
         // Making the first seedling
         const seedling = BABYLON.MeshBuilder.CreateSphere(
             seedlingName,
@@ -112,21 +161,49 @@ var createScene = function () {
         }
     }
 
-    planetNames = ["p1", "p2"];
-    seedlings = [];
+    function numberOfPlanets(num, diameter) {
+        let planets = createPlanetPositions(num, diameter);
+        for (let i = 0; i < num; i++) {
+            let name = "planet" + i;
+            planets[i].name = name;
+        }
+        // console.log(names);
+        return planets;
+    }
 
-    const planets = planetNames.map((name) => {
-        const planet = buildPlanet(name, 1);
-        console.log(planet.position);
+    let planetsObj = numberOfPlanets(4, 1);
+    console.log(planetsObj);
 
-        buildSeedlings(planet, 1);
+    //
+    let seedlings = [];
 
-        return planet;
-    });
+    // build the planets
+    for (let i = 0; i < planetsObj.length; i++) {
+        const planet = buildPlanet(planetsObj[i].name, planetsObj[i].diameter);
 
+        planet.position.x = planetsObj[i].x;
+        planet.position.y = planetsObj[i].y;
+        planet.position.z = planetsObj[i].z;
+
+        buildSeedlings(planet, 3, planetsObj[i].diameter);
+
+        // return planet;
+    }
+
+    // const planets = planetObj.map((name, index) => {
+    //     const planet = buildPlanet(name, planetPositions[index].diameter);
+
+    //     planet.position.x = planetPositions[index].x;
+    //     planet.position.y = planetPositions[index].y;
+    //     planet.position.z = planetPositions[index].z;
+
+    //     buildSeedlings(planet, 3);
+
+    //     return planet;
+    // });
+
+    // Orbits for the seedlings
     let alpha = 0;
-
-    // console.log(seedling.parent.position.y);
     scene.beforeRender = function () {
         seedlings.forEach((seedling, i) => {
             // Adding the orbits
@@ -136,245 +213,10 @@ var createScene = function () {
                 Math.cos(alpha + i)
                 // 0
             );
-            // speed of the seedling orbit
         });
+        // speed of the seedling orbit
         alpha += 0.01;
     };
-    // Function to create the planets and seedlings
-    // function createPlanetsSeedlings(num) {
-    //     // limit the number of planets
-    //     if (num < 10) {
-    //         for (let i = 1; i < num; i++) {
-    //             // Testing to see if I can clone based on an array
-    //             let name = "planet" + i;
-    //             planetNames.push(name);
-
-    //             let seedlingName = "seedling" + i;
-    //             seedlingNames.push(seedlingName);
-    //         }
-
-    //         // Making the first planet
-    //         let radius = 1;
-    //         const planet0 = BABYLON.MeshBuilder.CreateSphere(
-    //             "planet0",
-    //             { diameter: radius },
-    //             scene
-    //         );
-    //         // put the first planet at all zero coordinates
-    //         planet0.position = new BABYLON.Vector3(0, 0, 0);
-
-    //         // Adding materials for the planet
-    //         const materialPlanet = new BABYLON.StandardMaterial(
-    //             "materialPlanet",
-    //             scene
-    //         );
-    //         materialPlanet.diffuseTexture = new BABYLON.Texture(
-    //             "leather_test.png",
-    //             scene
-    //         );
-    //         planet0.material = materialPlanet;
-
-    //         // cloning the planet meshes
-    //         planetNames.map(function (planetName) {
-    //             planetName = planet0.clone({ planetName });
-    //             planetName.position = new BABYLON.Vector3(
-    //                 genNum(2, 20),
-    //                 genNum(2, 20),
-    //                 0
-    //             );
-    //         });
-
-    //         // Making the first seedling
-    //         const seedling0 = BABYLON.MeshBuilder.CreateSphere(
-    //             "seedling0",
-    //             { diameter: 0.15 },
-    //             scene
-    //         );
-
-    //         // Setting the planet as the seedling0s parent
-    //         seedling0.parent = planet0;
-    //         seedling0.position = new BABYLON.Vector3(1, 1, 0);
-
-    //         // Creating the trail for the seedling
-    //         var trail0 = new BABYLON.TrailMesh(
-    //             "seedlingTrail0",
-    //             seedling0,
-    //             scene,
-    //             0.08,
-    //             40,
-    //             true
-    //         );
-
-    //         // Creating a glow layer
-    //         const gl = new BABYLON.GlowLayer("glow", scene, {
-    //             mainTextureSamples: 4,
-    //         });
-
-    //         // Here I can change the intensity of the glow
-    //         gl.intensity = 2;
-
-    //         // Adding the glow to the seedling and trail mesh
-    //         gl.addIncludedOnlyMesh(seedling0);
-    //         gl.addIncludedOnlyMesh(trail0);
-
-    //         // Creating a teal color for the seedling and trail
-    //         const material = new BABYLON.StandardMaterial("material", scene);
-    //         material.diffuseColor = new BABYLON.Color3(1, 0, 0);
-    //         material.emissiveColor = new BABYLON.Color3.Teal();
-    //         seedling0.material = material;
-    //         trail0.material = material;
-
-    //         // cloning the seedlings
-    //         seedlingNames.map(function (seedlingName, index) {
-    //             seedlingName = seedling0.clone({ seedlingName });
-    //             parentName = planetNames[index];
-    //             seedlingName.parent = window[parentName];
-    //             // console.log(seedlingName.parent);
-    //             // seedlingName.position =
-    //         });
-
-    //         console.log(seedling0.parent);
-    //         // Adding the orbits
-    //         let alpha = 0;
-    //         // console.log(seedling.parent.position.y);
-    //         scene.beforeRender = function () {
-    //             seedling0.position = new BABYLON.Vector3(
-    //                 Math.sin(alpha),
-    //                 seedling0.parent.position.y,
-    //                 Math.cos(alpha)
-    //             );
-    //             // speed of the seedling orbit
-    //             alpha += 0.01;
-    //         };
-    //     }
-    // }
-
-    // createPlanetsSeedlings(5);
-
-    // console.log(seedling.parent.position.y);
-    // scene.beforeRender = function () {
-    //     seedlingNames.forEach((seedling) => {
-    //         seedling.position = new BABYLON.Vector3(
-    //             Math.sin(alpha),
-    //             seedling.position.y,
-    //             Math.cos(alpha)
-    //         );
-    //     });
-
-    //     // speed of the seedling orbit
-    //     alpha += 0.01;
-    // };
-    // console.log(seedlingNames);
-    // console.log(planetNames);
-
-    // TESTING STUFF
-
-    // // First planet
-    // const planet = BABYLON.MeshBuilder.CreateSphere(
-    //     "planet",
-    //     { diameter: 1.5 },
-    //     scene
-    // );
-
-    // planet.position = new BABYLON.Vector3(0, 0, 0);
-    // // planet.scaling = new BABYLON.Vector3(5, 5, 5);
-
-    // const planet2 = planet.clone("planet2");
-    // planet2.position = new BABYLON.Vector3(genNum(2, 5), genNum(2, 5), 0);
-
-    // // Seedlings
-    // const seedling = BABYLON.MeshBuilder.CreateSphere(
-    //     "seedling",
-    //     { diameter: 0.15 },
-    //     scene
-    // );
-    // // seedling.position = new BABYLON.Vector3(1, 1, 0);
-
-    // // seedling.scaling = new BABYLON.Vector3(0.1, 0.1, 0.1);
-
-    // // Making trails for the seedlings - https://playground.babylonjs.com/#1F4UET#4
-    // // scene.enablePhysics();
-    // // seedling.physicsImpostor = new BABYLON.PhysicsImpostor(
-    // //     seedling,
-    // //     BABYLON.PhysicsImpostor.SphereImpostor,
-    // //     { mass: 1, restitution: 0.6 }
-    // // );
-
-    // const trail = new BABYLON.TrailMesh(
-    //     "seedling trail",
-    //     seedling,
-    //     scene,
-    //     0.08,
-    //     40,
-    //     true
-    // );
-
-    // seedling.parent = planet;
-
-    // // cloning the seedling
-    // const seedling2 = seedling.clone("seedling2");
-    // const trail2 = new BABYLON.TrailMesh(
-    //     "seedling trail 2",
-    //     seedling2,
-    //     scene,
-    //     0.08,
-    //     40,
-    //     true
-    // );
-    // // const trail2 = trail.clone("trail2");
-    // seedling2.parent = planet2;
-
-    // console.log(seedling2.parent);
-    // // Materials for the texture of the planets and seedlings
-
-    // // Adding a glow but only to the seedling and its trail
-    // // (https://playground.babylonjs.com/#LRFB2D#30)
-    // const gl = new BABYLON.GlowLayer("glow", scene, {
-    //     mainTextureSamples: 4,
-    // });
-
-    // // Here I can change the intensity of the glow
-    // gl.intensity = 1;
-
-    // // Adding the glow to the seedling and trail mesh
-    // gl.addIncludedOnlyMesh(seedling);
-    // gl.addIncludedOnlyMesh(trail);
-
-    // gl.addIncludedOnlyMesh(seedling2);
-    // gl.addIncludedOnlyMesh(trail2);
-
-    // // Creating a teal color for the seedling and trail
-    // const material = new BABYLON.StandardMaterial("material", scene);
-    // material.diffuseColor = new BABYLON.Color3(1, 0, 0);
-    // material.emissiveColor = new BABYLON.Color3.Teal();
-    // seedling.material = material;
-    // trail.material = material;
-    // seedling2.material = material;
-    // trail2.material = material;
-
-    // // Create leathery material for planet
-    // const material2 = new BABYLON.StandardMaterial("material2", scene);
-    // material2.diffuseTexture = new BABYLON.Texture("leather_test.png", scene);
-    // planet.material = material2;
-    // planet2.material = material2;
-
-    // // Adding the orbits
-    // let alpha = 0;
-    // scene.beforeRender = function () {
-    //     seedling.position = new BABYLON.Vector3(
-    //         Math.sin(alpha),
-    //         seedling.parent.position.y,
-    //         Math.cos(alpha)
-    //     );
-
-    //     seedling2.position = new BABYLON.Vector3(
-    //         Math.sin(alpha),
-    //         seedling2.parent.position.y,
-    //         Math.cos(alpha)
-    //     );
-    //     // speed of the seedling orbit
-    //     alpha += 0.01;
-    // };
 
     return scene;
 };
